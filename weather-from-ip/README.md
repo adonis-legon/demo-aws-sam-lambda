@@ -1,4 +1,4 @@
-# SAM Project for a Lambda Application which includes a Lambda Function and an API Gateway Endpoint
+# SAM Project for a Lambda Application which includes a Lambda Function and an API Gateway Endpoint to query for the Weather Forcast of the source IP address that is making the HTTP request
 
 ## Build
 ```bash
