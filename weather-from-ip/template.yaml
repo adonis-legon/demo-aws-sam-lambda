@@ -1,0 +1,60 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  SAM Project for a Lambda Application which includes a Lambda Function and an API Gateway Endpoint
+
+Globals:
+  Function:
+    Timeout: 20
+
+Parameters:
+  Stage:
+    Type: String
+    Default: prod
+  WeatherApiKey:
+    Type: String
+  WeatherFromIpFunctionArchitecture:
+    Type: String
+    Default: x86_64
+
+Resources:
+  WeatherFromIpApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: !Ref Stage
+
+  WeatherFromIpFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: WeatherFromIpFunction
+      Handler: com.example.App::handleRequest
+      Runtime: java11
+      MemorySize: 512
+      Environment:
+        Variables:
+          WEATHER_API_BASE_URL: "https://api.openweathermap.org/data/2.5/weather"
+          WEATHER_API_KEY: !Ref WeatherApiKey
+          PUBLIC_IP_API_BASE_URL: "https://ipapi.co"
+      Events:
+        WeatherFromIp:
+          Type: Api
+          Properties:
+            Path: /api/v1/weather
+            Method: get
+            RestApiId: !Ref WeatherFromIpApi
+            Auth:
+              ApiKeyRequired: true
+      AutoPublishAlias: live
+      Architectures:
+        - !Ref WeatherFromIpFunctionArchitecture
+
+Outputs:
+  WeatherFromIpApi:
+    Description: "API Gateway endpoint URL on the specified stage for Weather from IP function"
+    Value: !Sub "https://${WeatherFromIpApi}.execute-api.${AWS::Region}.amazonaws.com/${Stage}/api/v1/weather"
+  WeatherFromIpFunction:
+    Description: "Weather from IP Lambda Function ARN"
+    Value: !GetAtt WeatherFromIpFunction.Arn
+  WeatherFromIpFunctionIamRole:
+    Description: "Implicit IAM Role created for Weather from IP function"
+    Value: !GetAtt WeatherFromIpFunctionRole.Arn
